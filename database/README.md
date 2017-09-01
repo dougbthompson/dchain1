@@ -14,7 +14,6 @@ import sys
 import pprint
 from sqlobject import *
 
-
 = scheme://[user[:password]@]host[:port]/database[?parameters]
 
 connection_string = 'postgres://dougt:dougt@192.168.1.17:5432/dougt'
