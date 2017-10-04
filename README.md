@@ -14,5 +14,13 @@ Also, different purpose technologies will be added to facilitate "rea-time", "re
 #### Analytics
 
 ### database - futures
+#### postgres
+#### mysql
+#### incore memory database
+#### analytics database
+
+### other
+#### amazon aws
+#### dashboard
 
 ## dchain1 end

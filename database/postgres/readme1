@@ -1,0 +1,121 @@
+
+import MySQLdb
+conn = MySQLdb.connect(db='test', username='ianb')
+cur = conn.cursor()
+cur.execute("select id, first_name, last_name from person")
+result = cur.fetchall()
+for id, first_name, last_name in result:
+    print "%2i %s" % (id, last_name, first_name)
+
+class Person(SQLObject):
+    # id is implicit
+    first_name = StringCol()
+    last_name = StringCol()
+
+
+john = Person.get(1)
+john.first_name
+
+__connection__ = 'postgres://pgsql@localhost/test'
+class Person(SQLObject):
+    first_name = StringCol()
+    last_name = StringCol()
+    emails = MultipleJoin('Email')
+
+class Email(SQLObject):
+    person = ForeignKey('Person')
+    type = EnumCol(['home', 'work'])
+    address = StringCol()
+
+def createTables():
+    for table in (Person, Email):
+        table.createTable(ifNotExists=True)
+
+john = Person(first_name='John', last_name='Doe')
+email = Email(person=john, type='home', address='john@work.com')
+john.emails
+
+tom = Person(first_name='Tom', last_name='Jones')
+tom is Person.get(tom.id)
+list(Person.selectBy(first_name='John'))
+
+class Person(SQLObject):
+    ...
+    def _get_name(self)
+        return self.first_name + ' ' + self.last_name
+
+tom.name
+
+class Person(SQLObject):
+    ...
+    last_name_searchable = StringCol()
+    def _set_last_name(self, value)
+        self._SO_set_last_name(self, value)
+        self.last_name_lower = re.sub(r'[^a-zA-Z]', '', value).lower()
+
+class Person(SQLObject):
+    _table = "people"
+    first_name = StringCol(dbName="fname")
+    ...
+
+class Address(SQLObject):
+    people = RelatedJoin('Person')
+
+class Person(SQLObject):
+    address = RelatedJoin('Address')
+
+create table address_person (
+    address_id int not null,
+    person_id  int noy null
+);
+
+class Person(SQLObject):
+    _fromDatabase = True
+
+Person.first_name = "new name"
+Person.set(first_name="new name", last_name="new last name")
+
+query = Person.q.first_name == "Joe"
+Person.select(query)
+
+sqlrepr(Person.q.first_name == "Joe", 'mysql')
+
+Person.select((Person.q.id == Email.q.personID) & (Email.q.address.startswith('joe')))
+becomes:
+Select person.id, person.first_name, person.last_name
+  from person, email
+ where person.id        = email.person_id
+   and email.address like 'joe%'
+
+class Person(SQLObject):
+    firstName = StringCol()
+    lastName = StringCol()
+
+    def _get_employee(self):
+        value = Employee.selectBy(person=self)
+        if value:
+            return value[0]
+        else:
+            raise AttributeError, '%r is not an employee' % self
+    def _get_isEmployee(self):
+        value = Employee.selectBy(person=self)
+        # turn into a bool:
+        return not not value
+    def _set_isEmployee(self, value):
+        if value:
+            # Make sure we are an employee...
+            if not self.isEmployee:
+                Empoyee.new(person=self, position=None)
+        else:
+            if self.isEmployee:
+                self.employee.destroySelf()
+    def _get_position(self):
+        return self.employee.position
+    def _set_position(self, value):
+        self.employee.position = value
+
+class Employee(SQLObject):
+    person = ForeignKey('Person')
+    position = StringCol()
+
+

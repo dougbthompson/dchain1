@@ -1,0 +1,128 @@
+
+root@linux-gamma:/opt/dchain1/database/postgres# python
+Python 2.7.12 (default, Nov 19 2016, 06:48:10) 
+[GCC 5.4.0 20160609] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> quit()
+root@linux-gamma:/opt/dchain1/database/postgres# cat test.py 
+
+import psycopg2
+import sys
+import pprint
+
+root@linux-gamma:/opt/dchain1/database/postgres# python
+Python 2.7.12 (default, Nov 19 2016, 06:48:10) 
+[GCC 5.4.0 20160609] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> from sqlobject import *
+>>> connection_string = 'postgres:dougt:dougt@192.168.1.17:5432/dougt'
+>>> connection = connectionForURI(connection_string)
+>>> sqlhub.processConnection = connection
+>>> p1 = Person.get(1)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'Person' is not defined
+>>> class Person(SQLObject):
+...     firstName = StringCol()
+...     middleInitial = StringCol(length=1, default=None)
+...     lastName = StringCol()
+... 
+>>> p1 = Person.get(1)                                   
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/main.py", line 943, in get
+    val._init(id, connection, selectResults)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/main.py", line 981, in _init
+    selectResults = self._connection._SO_selectOne(self, dbNames)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/dbconnection.py", line 612, in _SO_selectOne
+    return self._SO_selectOneAlt(so, columnNames, so.q.id == so.id)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/dbconnection.py", line 622, in _SO_selectOneAlt
+    columns, staticTables=[so.sqlmeta.table], clause=condition)))
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/dbconnection.py", line 476, in queryOne
+    return self._runWithConnection(self._queryOne, s)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/dbconnection.py", line 340, in _runWithConnection
+    conn = self.getConnection()
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/dbconnection.py", line 351, in getConnection
+    conn = self.makeConnection()
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/postgres/pgconnection.py", line 201, in makeConnection
+    ErrorMessage(e, "used connection string %r" % self.dsn))
+sqlobject.dberrors.OperationalError: could not connect to server: No such file or directory
+        Is the server running locally and accepting
+        connections on Unix domain socket "/dougt:dougt@192.168.1.17:5432/.s.PGSQL.5432"?
+used connection string 'dbname=dougt host=/dougt:dougt@192.168.1.17:5432'
+>>> connection_string = 'postgres//:dougt:dougt@192.168.1.17:5432/dougt'
+>>> connection = connectionForURI(connection_string)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/dbconnection.py", line 1071, in connectionForURI
+    connCls = self.dbConnectionForScheme(scheme)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/dbconnection.py", line 1089, in dbConnectionForScheme
+    ', '.join(self.schemeBuilders.keys())))
+AssertionError: No SQLObject driver exists for postgres// (only sqlite, sapdb, postgresql, firebird, maxdb, rdbhost, sybase, interbase, psycopg, mysql, mssql, postgres)
+>>> connection_string = 'postgres://dougt:dougt@192.168.1.17:5432/dougt'
+>>> connection = connectionForURI(connection_string)                    
+>>> sqlhub.processConnection = connection
+>>> p1 = Person.get(1) 
+>>> p1
+<Person 1 firstName='John' middleInitial=None lastName='Doe'>
+>>> dbConnection = dbconnection.ConnectionHub()
+>>> connectP1 = dbConnection
+>>> dbConnection.threadConnection = connectionForURI(connection_string) 
+>>> connectP2 = dbConnection 
+>>> dbConnection.threadConnection = connectionForURI(connection_string) 
+>>> connectP1
+<sqlobject.dbconnection.ConnectionHub object at 0x7f2b02155850>
+>>> connectP2
+<sqlobject.dbconnection.ConnectionHub object at 0x7f2b02155850>
+>>> hub1 = ConnectionHub()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'ConnectionHub' is not defined
+>>> hub1 = dbconnection.ConnectionHub()
+>>> hub2 = dbconnection.ConnectionHub() 
+>>> class MyDBClass(SQLObject):
+...     _connection = hub
+... 
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<stdin>", line 2, in MyDBClass
+NameError: name 'hub' is not defined
+>>> class MyDBClass1(SQLObject):
+...     _connection = hub1
+... 
+>>> class MyDBClass2(SQLObject):
+...     _connection = hub2
+... 
+>>> hub1.threadConnection = connectionForURI('postgres://dougt:dougt@192.168.1.17:5432/dougt')
+>>> hub2.threadConnection = connectionForURI('postgres://dougt:dougt@192.168.1.17:5432/dougt') 
+>>> hub1
+<sqlobject.dbconnection.ConnectionHub object at 0x7f2b02155890>
+>>> hub2
+<sqlobject.dbconnection.ConnectionHub object at 0x7f2b021558d0>
+>>> sql1 = MyDBClass1()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/main.py", line 1301, in __init__
+    self._create(id, **kw)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/main.py", line 1352, in _create
+    self._SO_finishCreate(id)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/main.py", line 1378, in _SO_finishCreate
+    id, names, values)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/dbconnection.py", line 488, in queryInsertID
+    names, values)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/dbconnection.py", line 342, in _runWithConnection
+    val = meth(conn, *args)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/postgres/pgconnection.py", line 286, in _queryInsertID
+    self._executeRetry(conn, c, q)
+  File "/usr/local/lib/python2.7/dist-packages/sqlobject/postgres/pgconnection.py", line 248, in _executeRetry
+    raise dberrors.ProgrammingError(msg)
+sqlobject.dberrors.ProgrammingError: relation "my_db_class1" does not exist
+LINE 1: INSERT INTO my_db_class1 DEFAULT VALUES RETURNING id
+                    ^
+
+>>> sql1 = MyDBClass1(SQLObject)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: __init__() takes exactly 1 argument (2 given)
+>>> quit()
+
